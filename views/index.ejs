@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        input {
+            -webkit-transition-duration: 0.4s; /* Safari */
+            transition-duration: 0.4s;
+        }
+
+        button.bu:hover {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+        table{
+            margin-bottom: 10px;
+            border-collapse: collapse;
+            width: 100%;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th{
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        td {
+            padding: 15px;
+            text-align: left;
+            padding: 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<div>
+    <label for="file">Upload File</label>
+    <input type="file" id="file" name="file">
+    <br>
+    <label for="file">Email Adress to send the report</label>
+    <input type="email" required id="email" name="userEmail">
+    <br>
+    <input id="sendFile" type="button" value="Send File">
+    <div id="results"></div>
+</div>
+<script src="http://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script>
+    $("#sendFile").on('click', function () {
+        let fileInput = $('#file');
+        if (!window.FileReader) {
+            alert('Your browser is not supported');
+            return false;
+        }
+        let input = fileInput.get(0);
+        // Create a reader object
+        let reader = new FileReader();
+        if (input.files.length) {
+            // Read the file
+            reader.readAsText(input.files[0]);
+            // When it's loaded, process it
+            $(reader).on('load', processFile);
+        } else {
+            alert('Please upload a file before continuing')
+        }
+    });
+
+    function processFile(e) {
+        let userEmail = $("#email").val();
+        let fileContent = e.target.result;
+        $.ajax({
+            type: "POST",
+            datatype: "application/json",
+            data: {fileContent: fileContent, email: userEmail},
+            url: '/upload',
+            success: function (response) {
+                $("#results").empty();
+                $("#results").append("<h1>מסקנות הדו\"ח</h1>");
+                $('#results').append("<table border='1' width='200'>")
+                $('#results').append("<tr><th>פעולות</th><th>תוצאות</th></tr>");
+                $.each(response, function () {
+                    $('#results').append(`<tr><td>${this.key}</td><td>${this.value}</td></tr>`);
+                });
+
+                $('#results').append("</table>")
+            },
+            error: function (err) {
+                alert('Error');
+            }
+        });
+    }
+</script>
+</body>
+</html>
+
+
